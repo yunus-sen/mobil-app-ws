@@ -131,21 +131,79 @@ public class UserController {
 		AdressDto addressDto = addressService.getAddress(addressId);
 		AddressesRest rest = modelMapper.map(addressDto, AddressesRest.class);
 
-		//http//localhost:8080/users/<userId>
-		Link userLink= WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).withRel("user");
-		Link userAddressesLink= WebMvcLinkBuilder.linkTo(UserController.class)
-				.slash(userId)
-				.slash("addresses")
+		// http//localhost:8080/users/<userId>
+		Link userLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).withRel("user");
+		Link userAddressesLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).slash("addresses")
 				.withRel("addresses");
-		Link selfLink= WebMvcLinkBuilder.linkTo(UserController.class)
-				.slash(userId)
-				.slash("addressses")
-				.slash(addressId)
-				.withSelfRel();
-		
+		Link selfLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).slash("addressses")
+				.slash(addressId).withSelfRel();
+
 		/*
 		 * rest.add(userLink); rest.add(userAddressesLink); rest.add(selfLink);
 		 */
-		return EntityModel.of(rest, Arrays.asList(userLink,userAddressesLink,selfLink));
+		return EntityModel.of(rest, Arrays.asList(userLink, userAddressesLink, selfLink));
 	}
+
+	/*
+	 * http://localhost:8080/mobile-app-ws/users/email-verification?token=sdfsdf
+	 */
+	@GetMapping(path = "/email-verification", produces = { MediaType.APPLICATION_JSON_VALUE,
+			MediaType.APPLICATION_XML_VALUE })
+	public OperationStatusModel verifyEmailToken(@RequestParam(value = "token") String token) {
+
+		OperationStatusModel returnValue = new OperationStatusModel();
+		returnValue.setActionName(RequestOperationName.VERIFY_EMAIL.name());
+
+		boolean isVerified = userService.verifyEmailToken(token);
+
+		if (isVerified) {
+			returnValue.setActionResult(RequestOperationResult.SUCCES.name());
+		} else {
+			returnValue.setActionResult(RequestOperationResult.ERROR.name());
+		}
+
+		return returnValue;
+	}
+
+	/*
+	 * http://localhost:8080/mobile-app-ws/users/password-reset-request
+	 * 
+	 * @PostMapping(path = "/password-reset-request", produces =
+	 * {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes
+	 * = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE} )
+	 * public OperationStatusModel requestReset(@RequestBody
+	 * PasswordResetRequestModel passwordResetRequestModel) { OperationStatusModel
+	 * returnValue = new OperationStatusModel();
+	 * 
+	 * boolean operationResult =
+	 * userService.requestPasswordReset(passwordResetRequestModel.getEmail());
+	 * 
+	 * returnValue.setOperationName(RequestOperationName.REQUEST_PASSWORD_RESET.name
+	 * ()); returnValue.setOperationResult(RequestOperationStatus.ERROR.name());
+	 * 
+	 * if(operationResult) {
+	 * returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name()); }
+	 * 
+	 * return returnValue; }
+	 * 
+	 */
+
+	/*
+	 * @PostMapping(path = "/password-reset", consumes =
+	 * {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE} ) public
+	 * OperationStatusModel resetPassword(@RequestBody PasswordResetModel
+	 * passwordResetModel) { OperationStatusModel returnValue = new
+	 * OperationStatusModel();
+	 * 
+	 * boolean operationResult = userService.resetPassword(
+	 * passwordResetModel.getToken(), passwordResetModel.getPassword());
+	 * 
+	 * returnValue.setOperationName(RequestOperationName.PASSWORD_RESET.name());
+	 * returnValue.setOperationResult(RequestOperationStatus.ERROR.name());
+	 * 
+	 * if(operationResult) {
+	 * returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name()); }
+	 * 
+	 * return returnValue; }
+	 */
 }

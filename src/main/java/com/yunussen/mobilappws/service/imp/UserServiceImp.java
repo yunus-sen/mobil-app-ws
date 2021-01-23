@@ -20,6 +20,7 @@ import com.yunussen.mobilappws.exception.UserServiceException;
 import com.yunussen.mobilappws.io.entity.UserEntity;
 import com.yunussen.mobilappws.io.repository.UserRepository;
 import com.yunussen.mobilappws.service.UserService;
+import com.yunussen.mobilappws.shared.AmazonSES;
 import com.yunussen.mobilappws.shared.Utils;
 import com.yunussen.mobilappws.shared.dto.AdressDto;
 import com.yunussen.mobilappws.shared.dto.UserDto;
@@ -40,6 +41,8 @@ public class UserServiceImp implements UserService {
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 	@Autowired
 	private ModelMapper modelMapper ;
+	//@Autowired
+    //AmazonSES amazonSES;
 	
 	public UserDto createUser(UserDto user) {
 		
@@ -59,10 +62,17 @@ public class UserServiceImp implements UserService {
 		
 		String publicUserId=utils.generateUserId(32);
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		userEntity.setEmailVerificationToken(utils.generateEmailVerificationToken(publicUserId));
+		//userEntity.setEmailVerificationStatus(Boolean.FALSE);
+		//service de kontrol mail atana kadar gecici olarak böylw olsun.
+		userEntity.setEmailVerificationStatus(Boolean.TRUE);
 		userEntity.setUserId(publicUserId);
 		
 		UserEntity storeadUserDetails=userRepository.save(userEntity);
 		UserDto returnValue=modelMapper.map(storeadUserDetails, UserDto.class);
+		
+		//mail service yazınca aktifleştir.(ayrı proje oluşturup verify a ajax get atarak yapabilirsin )
+		//amazonSES.verifyEmail(returnValue);
 		return returnValue;
 	}
 	
@@ -81,7 +91,13 @@ public class UserServiceImp implements UserService {
 		UserEntity userEntity=userRepository.findByEmail(email);
 		if(userEntity==null) throw new UsernameNotFoundException(email);
 		
-		return new User(userEntity.getEmail(),userEntity.getEncryptedPassword(),new ArrayList<>());
+		//kullanıcının e postayı dogrulamadan girişini 3. parametre ile engelledim  engelledim
+		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), 
+				userEntity.getEmailVerificationStatus(),
+				true, true,
+				true, new ArrayList<>());
+		
+		//return new User(userEntity.getEmail(),userEntity.getEncryptedPassword(),new ArrayList<>());
 	}
 
 
@@ -135,5 +151,24 @@ public class UserServiceImp implements UserService {
 		return returnValue;
 	}
 
+	@Override
+	public boolean verifyEmailToken(String token) {
+	    boolean returnValue = false;
+
+        // Find user by token
+        UserEntity userEntity = userRepository.findUserByEmailVerificationToken(token);
+
+        if (userEntity != null) {
+            boolean hastokenExpired = Utils.hasTokenExpired(token);
+            if (!hastokenExpired) {
+                userEntity.setEmailVerificationToken(null);
+                userEntity.setEmailVerificationStatus(Boolean.TRUE);
+                userRepository.save(userEntity);
+                returnValue = true;
+            }
+        }
+
+        return returnValue;
+	}
 
 }
