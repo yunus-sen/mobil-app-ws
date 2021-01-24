@@ -56,6 +56,7 @@ public class Utils {
 	}
 
 	// oturum acıp kapatma icin tokenları oluşturdum.
+	//create token to email verify
 	public String generateEmailVerificationToken(String userId) {
 		String token = Jwts.builder().setSubject(userId)
 				.setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
@@ -63,7 +64,7 @@ public class Utils {
 		return token;
 	}
 
-	// create token to email verify
+	// reset the password token
 	public String generatePasswordResetToken(String userId) {
 		String token = Jwts.builder().setSubject(userId)
 				.setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))

@@ -17,7 +17,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.yunussen.mobilappws.exception.UserServiceException;
+import com.yunussen.mobilappws.io.entity.PasswordResetTokenEntity;
 import com.yunussen.mobilappws.io.entity.UserEntity;
+import com.yunussen.mobilappws.io.repository.PasswordResetTokenRepository;
 import com.yunussen.mobilappws.io.repository.UserRepository;
 import com.yunussen.mobilappws.service.UserService;
 import com.yunussen.mobilappws.shared.AmazonSES;
@@ -41,6 +43,9 @@ public class UserServiceImp implements UserService {
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 	@Autowired
 	private ModelMapper modelMapper ;
+	
+	@Autowired
+	private PasswordResetTokenRepository passwordResetTokenRepository;
 	//@Autowired
     //AmazonSES amazonSES;
 	
@@ -171,4 +176,67 @@ public class UserServiceImp implements UserService {
         return returnValue;
 	}
 
+	
+	@Override
+	public boolean requestPasswordReset(String email) {
+		
+        boolean returnValue = false;
+        
+        UserEntity userEntity = userRepository.findByEmail(email);
+
+        if (userEntity == null) {
+            return returnValue;
+        }
+        
+        String token = new Utils().generatePasswordResetToken(userEntity.getUserId());
+        
+        PasswordResetTokenEntity passwordResetTokenEntity = new PasswordResetTokenEntity();
+        passwordResetTokenEntity.setToken(token);
+        passwordResetTokenEntity.setUserDetails(userEntity);
+        passwordResetTokenRepository.save(passwordResetTokenEntity);
+        
+        //ŞİFRE SIFIRLAMA MAİL GÖNDERMEK İCİN AMAZONSES KULLANCAM.
+		/*
+		 * returnValue = new AmazonSES().sendPasswordResetRequest(
+		 * userEntity.getFirstName(), userEntity.getEmail(), token);7
+		 * return returnValue;
+		 */
+
+        	//GECİCİ OLARAK TRUE GÖNDERECEM
+        return Boolean.TRUE;
+	}
+
+	@Override
+	public boolean resetPassword(String token, String password) {
+        boolean returnValue = false;
+        
+        if( Utils.hasTokenExpired(token) )
+        {
+            return returnValue;
+        }
+ 
+        PasswordResetTokenEntity passwordResetTokenEntity = passwordResetTokenRepository.findByToken(token);
+
+        if (passwordResetTokenEntity == null) {
+            return returnValue;
+        }
+
+        // Prepare new password
+        String encodedPassword = bCryptPasswordEncoder.encode(password);
+        
+        // Update User password in database
+        UserEntity userEntity = passwordResetTokenEntity.getUserDetails();
+        userEntity.setEncryptedPassword(encodedPassword);
+        UserEntity savedUserEntity = userRepository.save(userEntity);
+ 
+        // Verify if password was saved successfully
+        if (savedUserEntity != null && savedUserEntity.getEncryptedPassword().equalsIgnoreCase(encodedPassword)) {
+            returnValue = true;
+        }
+   
+        // Remove Password Reset token from database
+        passwordResetTokenRepository.delete(passwordResetTokenEntity);
+        
+        return returnValue;
+	}
 }
