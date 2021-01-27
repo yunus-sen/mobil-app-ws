@@ -136,6 +136,7 @@ public class UserServiceImp implements UserService {
 	public void delete(String userId) {
 		UserEntity userStoread=userRepository.findByUserId(userId);
 		if(userStoread==null) throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+		
 		userRepository.delete(userStoread);
 		
 	}

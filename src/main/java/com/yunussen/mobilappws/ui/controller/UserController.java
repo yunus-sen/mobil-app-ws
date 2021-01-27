@@ -11,6 +11,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,7 @@ import com.yunussen.mobilappws.ui.model.response.UserRest;
 
 @RestController
 @RequestMapping("users")
+// @CrossOrigin({"http:/localhost:8080","http:/localhost:8081"})//tüm metotları bu domainlere actım.
 public class UserController {
 
 	@Autowired
