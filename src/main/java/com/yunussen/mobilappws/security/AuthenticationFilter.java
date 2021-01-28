@@ -37,6 +37,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         this.authenticationManager = authenticationManager;
     }
     
+    //login 2. adımıdır eger kullanıcı giriş yap dediginde ilk olarak web filtere gider ve izinlere bakar direkt login cagırırsam buraya gelir ve kullanıcı UserService cindeki loadby methodu ile bulur buraya dönerir.
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req,
                                                 HttpServletResponse res) throws AuthenticationException {
@@ -59,6 +60,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         }
     }
     
+    //giriş başarılı ise token oluşturup responsun headarına token ve kullanıcı publicUserId sini ekledim.
     @Override
     protected void successfulAuthentication(HttpServletRequest req,
                                             HttpServletResponse res,

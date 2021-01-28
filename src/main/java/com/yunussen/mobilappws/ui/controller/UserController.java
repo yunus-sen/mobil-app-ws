@@ -36,6 +36,9 @@ import com.yunussen.mobilappws.ui.model.response.OperationStatusModel;
 import com.yunussen.mobilappws.ui.model.response.RequestOperationResult;
 import com.yunussen.mobilappws.ui.model.response.UserRest;
 
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+
 @RestController
 @RequestMapping("users")
 // @CrossOrigin({"http:/localhost:8080","http:/localhost:8081"})//tüm metotları bu domainlere actım.
@@ -48,7 +51,11 @@ public class UserController {
 	@Autowired
 	private AddressService addressService;
 
+	
 	@GetMapping(path = "/{id}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="authorization", value="${userController.authorizationHeader.description}", paramType="header")
+	})
 	public UserRest getUser(@PathVariable(name = "id", required = true) String id) {
 		UserDto user = userService.findUserByid(id);
 

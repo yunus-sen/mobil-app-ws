@@ -34,24 +34,27 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 
 		http
-		.cors().and()//corslara izin verdim 
-		.csrf().disable().authorizeRequests()
-		//izileri yönetiyorum.
-				.antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
-				.permitAll()
-				.antMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)
-				.permitAll()
-				.antMatchers(HttpMethod.POST, SecurityConstants.PASSWORD_RESET_REQUEST_URL)
-				.permitAll()
-				.antMatchers(HttpMethod.POST, SecurityConstants.PASSWORD_RESET_URL)
-				.permitAll()
-				.anyRequest()
-				.authenticated()
-				.and()
-				/// login diyerek giriyordu.
-				// .addFilter(new AuthenticationFilter(authenticationManager()));
-				.addFilter(getAuthenticationFilter()).addFilter(new AuthorizationFilter(authenticationManager()))
-				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	        .cors().and()//cors a izin verdim
+	        .csrf().disable().authorizeRequests()
+	        .antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
+	        .permitAll()
+	        .antMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)
+	        .permitAll()
+	        .antMatchers(HttpMethod.POST, SecurityConstants.PASSWORD_RESET_REQUEST_URL)
+	        .permitAll()
+	        .antMatchers(HttpMethod.POST, SecurityConstants.PASSWORD_RESET_URL)
+	        .permitAll()
+	        .antMatchers(SecurityConstants.H2_CONSOLE)
+	        .permitAll()
+	        .antMatchers("/v2/api-docs", "/configuration/**", "/swagger*/**", "/webjars/**")//swagger izin vedim.
+	        .permitAll()
+	        .anyRequest().authenticated().and()
+	        .addFilter(getAuthenticationFilter())
+	        .addFilter(new AuthorizationFilter(authenticationManager()))
+	        .sessionManagement()
+	        .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	        
+	        http.headers().frameOptions().disable();
 
 	}
 
