@@ -1,6 +1,7 @@
 package com.yunussen.mobilappws.shared.dto;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -24,5 +25,7 @@ public class UserDto implements Serializable {
 	private String emailVerificationToken;
 	private Boolean emailVerificationStatus=false;
 	private List<AdressDto>addresses;
+	//private Collection<String>roles;
+	private String role;
 	
 }

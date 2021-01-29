@@ -1,6 +1,9 @@
 package com.yunussen.mobilappws.service.imp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -18,9 +21,12 @@ import org.springframework.stereotype.Service;
 
 import com.yunussen.mobilappws.exception.UserServiceException;
 import com.yunussen.mobilappws.io.entity.PasswordResetTokenEntity;
+import com.yunussen.mobilappws.io.entity.RoleEntity;
 import com.yunussen.mobilappws.io.entity.UserEntity;
 import com.yunussen.mobilappws.io.repository.PasswordResetTokenRepository;
+import com.yunussen.mobilappws.io.repository.RoleRepository;
 import com.yunussen.mobilappws.io.repository.UserRepository;
+import com.yunussen.mobilappws.security.UserPrincipal;
 import com.yunussen.mobilappws.service.UserService;
 import com.yunussen.mobilappws.shared.AmazonSES;
 import com.yunussen.mobilappws.shared.Utils;
@@ -42,8 +48,9 @@ public class UserServiceImp implements UserService {
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 	@Autowired
-	private ModelMapper modelMapper ;
-	
+	private ModelMapper modelMapper ;	
+	@Autowired
+	private RoleRepository roleRepository;
 	@Autowired
 	private PasswordResetTokenRepository passwordResetTokenRepository;
 	//@Autowired
@@ -73,6 +80,23 @@ public class UserServiceImp implements UserService {
 		userEntity.setEmailVerificationStatus(Boolean.TRUE);
 		userEntity.setUserId(publicUserId);
 		
+		//LİSTE HALİNDEKİ ROLLERİ EKLEME		
+		/*Collection<RoleEntity>roleEntities=new HashSet<>();
+		for(String role:user.getRoles()) {
+			RoleEntity roleEntity=roleRepository.findByName(role);
+			if(role!=null) {
+				roleEntities.add(roleEntity);
+			}
+		}		
+		userEntity.setRoles(roleEntities);*/
+		
+		//TEK ROLLÜ
+		RoleEntity roleEntity=roleRepository.findByName(user.getRole());
+		if(roleEntity!=null) {
+			userEntity.setRoles(Arrays.asList(roleEntity));
+		}
+		
+		
 		UserEntity storeadUserDetails=userRepository.save(userEntity);
 		UserDto returnValue=modelMapper.map(storeadUserDetails, UserDto.class);
 		
@@ -90,18 +114,24 @@ public class UserServiceImp implements UserService {
 		return returnValue;
 	}
 	
+	//kullanıcı giriş yaptıgında gönderdigm method.
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		
 		UserEntity userEntity=userRepository.findByEmail(email);
 		if(userEntity==null) throw new UsernameNotFoundException(email);
 		
-		//kullanıcının e postayı dogrulamadan girişini 3. parametre ile engelledim  engelledim
-		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), 
+		return new UserPrincipal(userEntity);
+		
+		//kullanıcının e postayı dogrulamadan girişini 3. parametre ile engelledim  engelledimson paramaetresinde kullanıcının rollerini gönderirirm.
+		//daha fazla karmaşıklık yapmamak icin aynı bir UserPrincipal classında halldecem.
+		/*return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), 
 				userEntity.getEmailVerificationStatus(),
 				true, true,
-				true, new ArrayList<>());
+				true, new ArrayList<>());*/
 		
+		
+		//basit return
 		//return new User(userEntity.getEmail(),userEntity.getEncryptedPassword(),new ArrayList<>());
 	}
 

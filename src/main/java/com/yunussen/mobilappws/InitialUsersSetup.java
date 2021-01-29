@@ -16,6 +16,7 @@ import com.yunussen.mobilappws.io.entity.UserEntity;
 import com.yunussen.mobilappws.io.repository.AuthorityRepository;
 import com.yunussen.mobilappws.io.repository.RoleRepository;
 import com.yunussen.mobilappws.io.repository.UserRepository;
+import com.yunussen.mobilappws.shared.Roles;
 import com.yunussen.mobilappws.shared.Utils;
 
 @Component
@@ -40,13 +41,13 @@ public class InitialUsersSetup {
 		AuthorityEntity writeAuthority=createAuthority("WRITE_AUTHORITY");
 		AuthorityEntity deleteAuthority=createAuthority("DELETE_AUTHORITY");
 		
-		RoleEntity roleUser=createRole("ROLE_USER", Arrays.asList(readAuthority,writeAuthority));
-		RoleEntity roleAdmin=createRole("ROLE_ADMIN", Arrays.asList(readAuthority,writeAuthority,deleteAuthority));
+		createRole(Roles.ROLE_USER.name(), Arrays.asList(readAuthority,writeAuthority));
+		RoleEntity roleAdmin=createRole(Roles.ROLE_ADMIN.name(), Arrays.asList(readAuthority,writeAuthority,deleteAuthority));
 		
 		UserEntity user=userRepository.findByEmail("yunussen2727@gmail.com");
-		if(roleAdmin==null&&user==null)return;
+		if(roleAdmin==null||user!=null)return;
 		
-		 user=new UserEntity();
+		user=new UserEntity();
 		user.setFirstName("yunus");
 		user.setLastName("Şen");
 		user.setEmail("yunussen2727@gmail.com");

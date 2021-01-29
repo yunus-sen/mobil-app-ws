@@ -2,6 +2,8 @@ package com.yunussen.mobilappws.ui.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -11,6 +13,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.yunussen.mobilappws.exception.UserServiceException;
 import com.yunussen.mobilappws.service.AddressService;
 import com.yunussen.mobilappws.service.UserService;
+import com.yunussen.mobilappws.shared.Roles;
 import com.yunussen.mobilappws.shared.dto.AdressDto;
 import com.yunussen.mobilappws.shared.dto.UserDto;
 import com.yunussen.mobilappws.ui.model.request.PasswordResetModel;
@@ -51,7 +57,7 @@ public class UserController {
 	@Autowired
 	private AddressService addressService;
 
-	
+	@PostAuthorize("hasRole('ADMIN') or returnObject.userId==principal.userId")
 	@GetMapping(path = "/{id}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	@ApiImplicitParams({
 		@ApiImplicitParam(name="authorization", value="${userController.authorizationHeader.description}", paramType="header")
@@ -71,8 +77,11 @@ public class UserController {
 		if (userDetails.getFirstName().isEmpty())
 			throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
 
-		UserDto userDto = modelMapper.map(userDetails, UserDto.class);
-
+		UserDto userDto = modelMapper.map(userDetails, UserDto.class);		
+		//userDto.setRoles(new HashSet<>(Arrays.asList(Roles.ROLE_USER.name())));
+		
+		userDto.setRole(Roles.ROLE_USER.name());
+		
 		UserDto createdUser = userService.createUser(userDto);
 		UserRest returnvalue = modelMapper.map(createdUser, UserRest.class);
 
@@ -97,6 +106,9 @@ public class UserController {
 		return returnvalue;
 	}
 
+	//@Secured("ROLE_ADMIN")
+	//@PreAuthorize("hasAuthority('DELETE_AUTHORITY')")
+	@PreAuthorize("hasRole('ADMIN') or #userId==principal.userId")
 	@DeleteMapping(path = "{userId}", produces = { MediaType.APPLICATION_XML_VALUE,
 			MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_XML_VALUE,
 					MediaType.APPLICATION_JSON_VALUE })
