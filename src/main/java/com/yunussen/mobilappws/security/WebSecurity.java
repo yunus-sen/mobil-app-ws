@@ -23,9 +23,11 @@ import com.yunussen.mobilappws.service.UserService;
 @EnableGlobalMethodSecurity(securedEnabled = true,prePostEnabled = true)
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
-
-	private final UserService userDetailsService;
+	
 	private final UserRepository userRepository;
+	//bu ikisi userservice ve şifrelemeyi authManagera configure etmek icin lazım.
+	private final UserService userDetailsService;
+	
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	public WebSecurity(UserService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder,UserRepository userRepository) {
