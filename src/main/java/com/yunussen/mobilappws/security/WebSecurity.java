@@ -27,13 +27,15 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	private final UserRepository userRepository;
 	//bu ikisi userservice ve şifrelemeyi authManagera configure etmek icin lazım.
 	private final UserService userDetailsService;
+	private final SimpleCORSFilter corsFilter;
 	
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	public WebSecurity(UserService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder,UserRepository userRepository) {
+	public WebSecurity(UserService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder,UserRepository userRepository,SimpleCORSFilter corsFilter) {
 		this.userDetailsService = userDetailsService;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 		this.userRepository= userRepository;
+		this.corsFilter = corsFilter;
 	}
 
 	/**
@@ -65,6 +67,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	        .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	        
 	        http.headers().frameOptions().disable();
+		http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);//CORS İÇİN EKLE
 
 	}
 	//password nasıl cözecegine dair metodu burda verdim.
